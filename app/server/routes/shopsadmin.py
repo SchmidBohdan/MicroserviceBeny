@@ -1,12 +1,7 @@
 from fastapi import APIRouter, Body
-from fastapi.encoders import jsonable_encoder
 
-from app.server.database import (
-	retrieve_competitors,
-	populate_competitors
-)
+from app.server.database import retrieve_competitors
 from app.server.models.competitor import (
-	ErrorResponseModel,
 	ResponseModel
 )
 

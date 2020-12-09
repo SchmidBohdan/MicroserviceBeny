@@ -1,9 +1,6 @@
 from fastapi import APIRouter, Body
-from fastapi.encoders import jsonable_encoder
 
-from app.server.database import (
-	retrieve_crawls
-)
+from app.server.database import retrieve_crawls
 from app.server.models.competitor import (
 	ErrorResponseModel,
 	ResponseModel,

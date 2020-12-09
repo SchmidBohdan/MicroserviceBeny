@@ -1,6 +1,6 @@
 import motor.motor_asyncio
 from bson.objectid import ObjectId
-import re
+from datetime import datetime
 
 MONGO_DETAILS = "mongodb://localhost:27017"
 
@@ -123,14 +123,14 @@ async def retrieve_competitors():
 # Populate Competitors
 async def populate_competitors():
 	async for shop in shopsadmin_collection.find():
-		client = await get_user(shopasadmin_helper(shop).get("Client"))
+		client = await _get_user(shopasadmin_helper(shop).get("Client"))
 		if shop.get("Markets").__class__.__name__ == 'list':
 			markets = shop.get("Markets")
 		else:
 			markets = [shop.get("Markets")]
 
 		for market in markets:
-			fetched_market = await get_market(market)
+			fetched_market = await _get_market(market)
 			market_name = fetched_market.get("Name")
 
 			where = {
@@ -230,9 +230,28 @@ async def populate_competitors():
 			print("Removed old data in competitor table", end="\n")
 			[await competitors_collection.insert_one(i) for i in data]
 			print("Inserted new data in competitor table", end="\n")
+	
+	return True
 
 
-async def get_user(client_id):
+# DisableUsersWithExpiredShops
+async def disable_users():
+	async for shop in shopsadmin_collection.find():
+		end_date = shop.get('EndDate')
+		shop_end_date = datetime.strptime(end_date, "%Y-%m-%d")
+		curent_time = datetime.now()
+		
+		if curent_time > shop_end_date:
+			where = {
+				"$and": [
+					{"role": {"$ne": "3"}},
+					{"_id": ObjectId(shop.get("Client"))}
+				]
+			}
+			await user_collection.find_one_and_update(where, {"$set": {"enabled": "0"}})
+	return True
+		
+async def _get_user(client_id):
 	async for user in user_collection.find():
 		if user_helper(user).get("_id") == ObjectId(client_id):
 			return user
@@ -240,7 +259,7 @@ async def get_user(client_id):
 	return None
 
 
-async def get_market(market_id):
+async def _get_market(market_id):
 	async for market in marketplace_collection.find():
 		if marketplace_helper(market).get("_id") == ObjectId(market_id):
 			return market
