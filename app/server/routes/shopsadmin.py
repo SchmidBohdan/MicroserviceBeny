@@ -2,7 +2,7 @@ from fastapi import APIRouter, Body
 
 from app.server.database import retrieve_competitors
 from app.server.models.competitor import (
-	ResponseModel
+	response_model
 )
 
 
@@ -13,5 +13,5 @@ router = APIRouter()
 async def get_retrieve_competitors():
 	shopsadmins = await retrieve_competitors()
 	if shopsadmins:
-		return ResponseModel(shopsadmins, "Shopsadmin is successfully")
-	return ResponseModel(shopsadmins, "Empty list returned")
+		return response_model(shopsadmins, "Shopsadmin retrieved successfully")
+	return response_model(shopsadmins, "Empty list returned")

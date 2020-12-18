@@ -59,7 +59,7 @@ class UpdateCompetitorModel(BaseModel):
 		}
 
 
-def ResponseModel(data, message):
+def response_model(data, message):
 	return {
 		"data": [data],
 		"code": 200,
@@ -67,5 +67,5 @@ def ResponseModel(data, message):
 	}
 
 
-def ErrorResponseModel(error, code, message):
+def error_response_model(error, code, message):
 	return {"error": error, "code": code, "message": message}

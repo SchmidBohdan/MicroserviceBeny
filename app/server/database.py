@@ -1,6 +1,7 @@
 import motor.motor_asyncio
 from bson.objectid import ObjectId
 from datetime import datetime
+import logging
 
 MONGO_DETAILS = "mongodb://localhost:27017"
 
@@ -58,6 +59,7 @@ def shopasadmin_helper(shopsadmin) -> dict:
 	
 	return shopasadmins
 
+
 def user_helper(user) -> dict:
 	
 	user_parameters = [
@@ -66,6 +68,7 @@ def user_helper(user) -> dict:
 	users = get_valid_fields(user_parameters, user)
 	
 	return users
+
 
 def marketplace_helper(market) -> dict:
 	
@@ -124,7 +127,7 @@ async def retrieve_competitors():
 async def populate_competitors():
 	async for shop in shopsadmin_collection.find():
 		client = await _get_user(shopasadmin_helper(shop).get("Client"))
-		if shop.get("Markets").__class__.__name__ == 'list':
+		if isinstance(shop.get("Markets"), list):
 			markets = shop.get("Markets")
 		else:
 			markets = [shop.get("Markets")]
@@ -144,10 +147,10 @@ async def populate_competitors():
 			eans = await products_collection.find(where).distinct("ean")
 			count_eans = len(eans)
 			
-			print("User email - " + str(where.get('user_email')), end="\n")
-			print("Shop - " + str(shop.get("ID")), end="\n")
-			print("Marketplace - " + str(market_name), end="\n")
-			print("Count eans - " + str(count_eans), end="\n")
+			logging.info("User email - " + str(where.get('user_email')), end="\n")
+			logging.info("Shop - " + str(shop.get("ID")), end="\n")
+			logging.info("Marketplace - " + str(market_name), end="\n")
+			logging.info("Count eans - " + str(count_eans), end="\n")
 			
 			pipeline = [
 				{
@@ -227,11 +230,11 @@ async def populate_competitors():
 			data = crawlInfo.values()
 			
 			await competitors_collection.delete_many(where)
-			print("Removed old data in competitor table", end="\n")
+			logging.info("Removed old data in competitor table", end="\n")
 			[await competitors_collection.insert_one(i) for i in data]
-			print("Inserted new data in competitor table", end="\n")
-	
-	return True
+			logging.info("Inserted new data in competitor table", end="\n")
+			return True
+	return None
 
 
 # DisableUsersWithExpiredShops
@@ -249,8 +252,10 @@ async def disable_users():
 				]
 			}
 			await user_collection.find_one_and_update(where, {"$set": {"enabled": "0"}})
-	return True
-		
+			return True
+	return None
+
+
 async def _get_user(client_id):
 	async for user in user_collection.find():
 		if user_helper(user).get("_id") == ObjectId(client_id):

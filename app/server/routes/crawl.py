@@ -2,8 +2,8 @@ from fastapi import APIRouter, Body
 
 from app.server.database import retrieve_crawls
 from app.server.models.competitor import (
-	ErrorResponseModel,
-	ResponseModel,
+	error_response_model,
+	response_model,
 )
 
 
@@ -14,5 +14,5 @@ router = APIRouter()
 async def get_crawl():
 	crawls = await retrieve_crawls()
 	if crawls:
-		return ResponseModel(crawls, "Crawls data retrieved successfully")
-	return ResponseModel(crawls, "Empty list returned")
+		return response_model(crawls, "Crawls data retrieved successfully")
+	return response_model(crawls, "Empty list returned")
